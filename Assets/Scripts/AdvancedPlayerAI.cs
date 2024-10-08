@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAI : MonoBehaviour
+public class AdvancedPlayerAI : MonoBehaviour
 {
     [SerializeField] float movementSpeed = 3.0f;
     Rigidbody rbody;
@@ -12,7 +12,9 @@ public class PlayerAI : MonoBehaviour
     [SerializeField] GameObject playerView;
 
     [SerializeField] bool leftCast, rightCast;
-    
+
+    RaycastHit hit;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,8 +32,10 @@ public class PlayerAI : MonoBehaviour
         if (other.gameObject.tag == "Wall")
         {
             // If the object in front of the AI is on the wall layer
-            if (Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, Quaternion.identity, 1.5f, myMask))
+            if (Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, out hit, Quaternion.identity, 1.5f, myMask))
             {
+                transform.LookAt(transform.position - hit.normal);
+
                 // Look left and right for walls
                 leftCast = Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), -transform.right, Quaternion.identity, 8.0f, myMask);
                 rightCast = Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.right, Quaternion.identity, 8.0f, myMask);
@@ -51,14 +55,14 @@ public class PlayerAI : MonoBehaviour
                 else
                 {
                     transform.Rotate(Vector3.up, 90);
-                }                
+                }
             }
             else
             {
                 rbody.AddForce(Vector3.up * forceAmount, ForceMode.Impulse);
             }
-            
-            
+
+
         }
     }
 }
