@@ -59,4 +59,14 @@ public class AdvancedPlayerAI : MonoBehaviour
             rbody.AddForce(Vector3.up * forceAmount, ForceMode.Impulse);
         }
     }
+
+    public void MoveToward(GameObject target)
+    {
+        transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
+    }
+
+    public void MoveAway(GameObject target)
+    {
+        transform.LookAt(transform.position + (transform.position - target.transform.position));
+    }
 }
