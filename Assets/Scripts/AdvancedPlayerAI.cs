@@ -62,6 +62,7 @@ public class AdvancedPlayerAI : MonoBehaviour
 
     public void MoveToward(GameObject target)
     {
+        
         transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
     }
 
