@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class AdvancedPlayerAI : MonoBehaviour
 {
@@ -15,15 +17,52 @@ public class AdvancedPlayerAI : MonoBehaviour
 
     RaycastHit hit;
 
+    [SerializeField] List<GameObject> targets;
+    float targetDistance;
+    GameObject closestTarget;
+
     // Start is called before the first frame update
     void Start()
     {
         rbody = GetComponent<Rigidbody>();
     }
+    private void Update()
+    {
+        targetDistance = 10000;
+        closestTarget = null;
+        foreach (GameObject target in targets)
+        {
+            if (!Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), target.transform.position - transform.position, out hit, Quaternion.identity, Vector3.Distance(transform.position, target.transform.position), myMask))
+            {
+                if (Vector3.Distance(transform.position, target.transform.position) < targetDistance)
+                {
+                    targetDistance = Vector3.Distance(transform.position, target.transform.position);
+                    closestTarget = target;
+                }                
+            }
+        }
+
+        if (closestTarget != null)
+        {
+            if (closestTarget.tag == "Pickup")
+            {
+                SendMessageUpwards("MoveToward", closestTarget.gameObject);
+            }
+            else if (closestTarget.tag == "Hunter")
+            {
+                SendMessageUpwards("MoveAway", closestTarget.gameObject);
+            }
+            
+        }
+
+    }
+
 
     private void FixedUpdate()
     {
         transform.Translate(Vector3.forward * Time.fixedDeltaTime * movementSpeed);
+
+        
     }
 
     public void TurnPlayer()
@@ -68,6 +107,36 @@ public class AdvancedPlayerAI : MonoBehaviour
 
     public void MoveAway(GameObject target)
     {
-        transform.LookAt(transform.position + (transform.position - target.transform.position));
+        if (!Physics.BoxCast(playerView.transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.position - target.transform.position, out hit, Quaternion.identity, 3.0f, myMask))
+        {
+            Vector3 targetVector = transform.position + (transform.position - target.transform.position);            
+            transform.LookAt(new Vector3(targetVector.x, transform.position.y, targetVector.z));
+        }        
+    }
+
+    public void AddTarget(GameObject target)
+    {
+        if (!targets.Contains(target))
+        {
+            targets.Add(target);
+        }
+    }
+
+    public void RemoveTarget(GameObject target)
+    {
+        targets.Remove(target);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Pickup")
+        {
+            if (Vector3.Distance(transform.position, other.transform.position) < 1.5f)
+            {
+                other.transform.root.gameObject.SetActive(false);
+                RemoveTarget(other.transform.root.gameObject);
+            }
+
+        }
     }
 }

@@ -9,17 +9,21 @@ public class ObjectFinder : MonoBehaviour
     [SerializeField] LayerMask myMask;
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Pickup")
+        if (other.gameObject.tag == "Pickup" ||
+            other.gameObject.tag == "Hunter" ||
+            other.gameObject.tag == "Runner")
         {
-            if (!Physics.Linecast(transform.position, other.transform.position, out hit, myMask))
-            {
-                SendMessageUpwards("MoveToward", other.gameObject);
-            }
-            
+            SendMessageUpwards("AddTarget", other.transform.root.gameObject);           
         }
-        else if (other.gameObject.tag == "Danger")
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Pickup" ||
+            other.gameObject.tag == "Hunter" ||
+            other.gameObject.tag == "Runner")
         {
-            SendMessageUpwards("MoveAway", other.gameObject);
+            SendMessageUpwards("RemoveTarget", other.transform.root.gameObject);
         }
     }
 }
